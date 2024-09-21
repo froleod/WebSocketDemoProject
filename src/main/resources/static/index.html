@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Client</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const socket = new WebSocket("ws://localhost:8080/webs");
+
+            socket.onopen = function () {
+                console.log("WebSocket connection established");
+            };
+
+            socket.onmessage = function (event) {
+                const messages = document.getElementById("messages");
+                const messageItem = document.createElement("li");
+                messageItem.innerText = "Received: " + event.data;
+                messages.appendChild(messageItem);
+            };
+            document.getElementById("send").onclick = function () {
+                const message = document.getElementById("message").value;
+                socket.send(message);
+            };
+        });
+    </script>
+</head>
+<body>
+<h1>WebSocket Client</h1>
+<input type="text" id="message" placeholder="Type a message">
+<button id="send">Send</button>
+<ul id="messages"></ul>
+</body>
+</html>
