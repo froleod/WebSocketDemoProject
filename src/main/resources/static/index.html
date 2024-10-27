@@ -2,32 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Client</title>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const socket = new WebSocket("ws://localhost:8080/webs");
+    <title>WebSocket Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.4.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script type="text/javascript">
+        var stompClient = null;
 
-            socket.onopen = function () {
-                console.log("WebSocket connection established");
-            };
+        function connect() {
+            const socket = new SockJS('http://localhost:8080/webs');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/messages', function (messageOutput) {
+                    showMessageOutput(messageOutput.body);
+                });
+            });
+        }
 
-            socket.onmessage = function (event) {
-                const messages = document.getElementById("messages");
-                const messageItem = document.createElement("li");
-                messageItem.innerText = "Received: " + event.data;
-                messages.appendChild(messageItem);
-            };
-            document.getElementById("send").onclick = function () {
-                const message = document.getElementById("message").value;
-                socket.send(message);
-            };
-        });
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            stompClient.send("/app/send", {}, message);
+        }
+
+        function showMessageOutput(message) {
+            const response = document.getElementById('response');
+            const p = document.createElement('p');
+            p.appendChild(document.createTextNode(message));
+            response.appendChild(p);
+        }
     </script>
 </head>
 <body>
-<h1>WebSocket Client</h1>
-<input type="text" id="message" placeholder="Type a message">
-<button id="send">Send</button>
-<ul id="messages"></ul>
+<div>
+    <button onclick="connect();">Connect</button>
+    <input type="text" id="message" placeholder="Enter message...">
+    <button onclick="sendMessage();">Send</button>
+</div>
+<div id="response"></div>
 </body>
 </html>
